@@ -1445,3 +1445,137 @@ TIMESTAMP_PATTERN = r'^\d{20}$'
 ---
 
 **End of Design Document**
+
+---
+
+## 13. Testing & Quality Assurance
+
+### Test-Driven Development (TDD)
+
+**Philosophy:** Write tests before code to ensure quality and prevent regressions.
+
+**TDD Cycle:**
+1. **RED** - Write a failing test
+2. **GREEN** - Write minimal code to pass
+3. **REFACTOR** - Improve code while keeping tests green
+
+### Testing Rules
+
+1. **All new code must have tests written first**
+2. **Minimum 80% code coverage required**
+3. **No commits without passing tests**
+4. **Tests are production code** - maintain with same rigor
+
+### Test Structure
+
+```
+tests/
+├── conftest.py              # Shared fixtures and mocks
+├── unit/                    # Fast, isolated component tests
+│   ├── test_validators.py   # 38 test cases
+│   ├── test_ledger.py       # 18 test cases
+│   ├── test_response_writer.py # 15 test cases
+│   └── test_alpaca_client.py # 20+ test cases
+├── integration/             # Module interaction tests
+│   └── test_order_pipeline.py
+└── e2e/                     # Complete workflow tests
+    └── test_complete_workflow.py
+```
+
+### Coverage Targets
+
+| Module | Target | Rationale |
+|--------|--------|-----------|
+| `src/validators.py` | 95%+ | Critical validation logic |
+| `src/ledger.py` | 90%+ | Duplicate detection |
+| `src/alpaca_client.py` | 85%+ | Core API integration |
+| `src/response_writer.py` | 85%+ | File I/O operations |
+| `order_processor.py` | 80%+ | Main orchestration |
+
+### Running Tests
+
+```bash
+# Run all tests
+uv run pytest
+
+# Run with coverage
+uv run pytest --cov
+
+# Generate HTML coverage report
+uv run pytest --cov --cov-report=html
+open htmlcov/index.html
+
+# Run specific test category
+uv run pytest -m unit
+uv run pytest -m integration
+uv run pytest -m e2e
+```
+
+### Test Categories
+
+- **Unit tests**: Test individual functions/classes in isolation with mocked dependencies
+- **Integration tests**: Test module interactions and complete pipelines
+- **E2E tests**: Test complete workflows from file drop to response
+
+### Writing Tests
+
+**Example test structure:**
+```python
+def test_ledger_records_order(temp_dir):
+    # ARRANGE
+    ledger = SimpleLedger(temp_dir / "ledger.txt")
+    order_id = "testbot_20260214120000000000_stockbuy"
+
+    # ACT
+    ledger.record(order_id)
+
+    # ASSERT
+    assert ledger.contains(order_id) is True
+```
+
+### Mocking Strategy
+
+- **Alpaca API calls**: Always mocked in tests (no real API calls)
+- **File system**: Use pytest's `tmp_path` fixture
+- **Time**: Use `freezegun` for deterministic timestamps
+- **Environment**: Mock env vars with `monkeypatch`
+
+### Pre-Commit Requirements
+
+Before every commit:
+- [ ] All tests pass (`uv run pytest`)
+- [ ] Coverage ≥ 80% (`uv run pytest --cov`)
+- [ ] No lint errors (`uv run ruff check .`)
+- [ ] Code formatted (`uv run black .`)
+
+### Continuous Integration
+
+Tests run automatically on:
+- Every pull request
+- Every commit to main branch
+- Scheduled daily runs
+
+CI/CD pipeline enforces:
+- All tests must pass
+- Code coverage must be ≥ 80%
+- No linting errors
+
+### Test Data
+
+**Fixtures available** (see `tests/conftest.py`):
+- `temp_dir` - Temporary directory
+- `valid_stock_buy_payload` - Sample stock order
+- `valid_crypto_buy_payload` - Sample crypto order
+- `mock_trading_client` - Mocked Alpaca client
+- `fixed_timestamp` - Deterministic timestamp
+
+**File naming for tests:**
+- Test files: `test_<module_name>.py`
+- Test classes: `class Test<FeatureName>`
+- Test functions: `def test_<what_is_being_tested>()`
+
+See [TESTING.md](TESTING.md) for complete testing guidelines.
+
+---
+
+**End of Design Document v0.2.0**

@@ -1,0 +1,12 @@
+{
+  "agent_id": "cryptobot",
+  "client_order_id": "cryptobot_20260214074858810149_cryptobuy",
+  "order_type": "cryptobuy",
+  "mode": "paper",
+  "payload": {
+    "symbol": "BTCUSD",
+    "qty": 0.001,
+    "order_class": "market",
+    "time_in_force": "gtc"
+  }
+}

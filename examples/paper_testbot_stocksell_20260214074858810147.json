@@ -1,0 +1,13 @@
+{
+  "agent_id": "testbot",
+  "client_order_id": "testbot_20260214074858810147_stocksell",
+  "order_type": "stocksell",
+  "mode": "paper",
+  "payload": {
+    "symbol": "NVDA",
+    "qty": 5,
+    "order_class": "limit",
+    "limit_price": 500.0,
+    "time_in_force": "day"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "agent_id": "testbot",
+  "client_order_id": "testbot_20260214074858810143_stockbuy",
+  "order_type": "stockbuy",
+  "mode": "paper",
+  "payload": {
+    "symbol": "AAPL",
+    "qty": 10,
+    "order_class": "limit",
+    "limit_price": 150.0,
+    "time_in_force": "gtc"
+  }
+}

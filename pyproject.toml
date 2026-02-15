@@ -22,6 +22,11 @@ build-backend = "hatchling.build"
 [tool.uv]
 dev-dependencies = [
     "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.12.0",
+    "pytest-timeout>=2.2.0",
+    "pytest-watch>=4.2.0",
+    "freezegun>=1.4.0",
     "black>=24.0.0",
     "ruff>=0.2.0",
 ]
@@ -37,3 +42,57 @@ target-version = "py310"
 [tool.ruff.lint]
 select = ["E", "F", "I"]
 ignore = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--cov=src",
+    "--cov=order_processor",
+    "--cov-report=html",
+    "--cov-report=term-missing",
+    "--cov-report=term:skip-covered",
+    "-v",
+    "--strict-markers",
+    "--tb=short",
+]
+markers = [
+    "unit: Unit tests for individual components",
+    "integration: Integration tests for module interactions",
+    "e2e: End-to-end tests for complete workflows",
+    "slow: Tests that take a long time to run",
+]
+
+[tool.coverage.run]
+source = ["src", "."]
+omit = [
+    "tests/*",
+    "test_*.py",
+    "*/__init__.py",
+    "*/conftest.py",
+    ".venv/*",
+    "examples/*",
+    "generate_samples.py",
+    "create_order.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "def __str__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+precision = 2
+show_missing = true
+skip_covered = false
+
+[tool.coverage.html]
+directory = "htmlcov"

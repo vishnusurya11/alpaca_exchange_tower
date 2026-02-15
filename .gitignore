@@ -50,6 +50,7 @@ orders/
 responses/
 logs/
 *.log
+data/
 
 # Testing
 .pytest_cache/

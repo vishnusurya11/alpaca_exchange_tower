@@ -1,0 +1,9 @@
+{
+  "agent_id": "portfolio",
+  "client_order_id": "portfolio_20260214074858810156_positions",
+  "order_type": "positions",
+  "mode": "paper",
+  "payload": {
+    "asset_class": "us_equity"
+  }
+}

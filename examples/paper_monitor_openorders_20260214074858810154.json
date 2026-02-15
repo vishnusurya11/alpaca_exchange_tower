@@ -1,0 +1,10 @@
+{
+  "agent_id": "monitor",
+  "client_order_id": "monitor_20260214074858810154_openorders",
+  "order_type": "openorders",
+  "mode": "paper",
+  "payload": {
+    "status": "open",
+    "limit": 100
+  }
+}

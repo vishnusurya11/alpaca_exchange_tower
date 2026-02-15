@@ -1,0 +1,13 @@
+{
+  "agent_id": "cryptobot",
+  "client_order_id": "cryptobot_20260214074858810152_cryptosell",
+  "order_type": "cryptosell",
+  "mode": "paper",
+  "payload": {
+    "symbol": "ETHUSD",
+    "qty": 0.01,
+    "order_class": "limit",
+    "limit_price": 3000.0,
+    "time_in_force": "gtc"
+  }
+}

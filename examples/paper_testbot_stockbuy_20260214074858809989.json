@@ -1,0 +1,12 @@
+{
+  "agent_id": "testbot",
+  "client_order_id": "testbot_20260214074858809989_stockbuy",
+  "order_type": "stockbuy",
+  "mode": "paper",
+  "payload": {
+    "symbol": "TSLA",
+    "qty": 1,
+    "order_class": "market",
+    "time_in_force": "day"
+  }
+}
