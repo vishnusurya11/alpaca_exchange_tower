@@ -54,7 +54,9 @@ def validate_filename(filename: str) -> Dict[str, str]:
 
     # Split by underscore
     parts = base_name.split('_')
-
+    
+    # We must have at least 4 parts, but if there are more than 4, it means
+    # either agentid or ordertype contained an underscore, which we don't allow.
     if len(parts) != 4:
         raise ValidationError(
             f"Filename must have exactly 4 parts separated by underscores. "
