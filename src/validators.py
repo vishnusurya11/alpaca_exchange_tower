@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field, validator
 ALLOWED_MODES = ["paper", "live"]
 ALLOWED_ORDER_TYPES = [
     "stockbuy", "stocksell",
-    "optionsingle", "optionmulti",
+    "optionsingle", "optionmulti", "pmcc",
     "cryptobuy", "cryptosell",
     "marketdata", "orderstatus", "openorders", "allorders",
     "positions", "accountinfo", "cancelorder"
@@ -140,6 +140,16 @@ class OptionMultiPayload(BaseModel):
     legs: list[OptionLeg] = Field(..., min_items=2)
 
 
+class PoorMansCoveredCallPayload(BaseModel):
+    underlying_symbol: str = Field(..., min_length=1, max_length=10)
+    long_leg_symbol: str = Field(..., min_length=1)  # OCC format deep ITM LEAPS call
+    long_leg_qty: int = Field(..., gt=0)
+    short_leg_symbol: str = Field(..., min_length=1)  # OCC format short-dated OTM call
+    short_leg_qty: int = Field(..., gt=0)
+    limit_price: float = Field(..., gt=0)
+    time_in_force: str = Field(..., pattern="^(day|gtc|ioc|fok)$")
+
+
 class CryptoOrderPayload(BaseModel):
     symbol: str = Field(..., pattern="^[A-Z]+USD$")  # e.g., BTCUSD
     qty: float = Field(..., gt=0)
@@ -248,6 +258,8 @@ def validate_json_order(data: Dict[str, Any], filename_parts: Dict[str, str]) ->
             OptionSinglePayload(**order.payload)
         elif order.order_type == 'optionmulti':
             OptionMultiPayload(**order.payload)
+        elif order.order_type == 'pmcc':
+            PoorMansCoveredCallPayload(**order.payload)
         elif order.order_type in ['cryptobuy', 'cryptosell']:
             CryptoOrderPayload(**order.payload)
         elif order.order_type == 'marketdata':

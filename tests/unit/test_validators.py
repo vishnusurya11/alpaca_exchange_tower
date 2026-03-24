@@ -351,6 +351,116 @@ class TestPayloadValidation:
         assert order.payload['order_class'] == 'mleg'
         assert len(order.payload['legs']) >= 2
 
+    def test_pmcc_valid(self, valid_pmcc_payload, fixed_timestamp):
+        """Test valid poor man's covered call order."""
+        order_data = {
+            "agent_id": "pmccbot",
+            "client_order_id": f"pmccbot_{fixed_timestamp}_pmcc",
+            "order_type": "pmcc",
+            "mode": "paper",
+            "payload": valid_pmcc_payload
+        }
+
+        filename_parts = {
+            'mode': 'paper',
+            'agent_id': 'pmccbot',
+            'order_type': 'pmcc',
+            'timestamp': fixed_timestamp
+        }
+
+        order = validate_json_order(order_data, filename_parts)
+        assert order.payload['underlying_symbol'] == 'AAPL'
+        assert order.payload['long_leg_symbol'] == 'AAPL270116C00120000'
+        assert order.payload['short_leg_symbol'] == 'AAPL260417C00180000'
+
+    def test_pmcc_missing_long_leg_fails(self, fixed_timestamp):
+        """Test PMCC without long leg symbol fails."""
+        invalid_payload = {
+            "underlying_symbol": "AAPL",
+            "long_leg_qty": 1,
+            "short_leg_symbol": "AAPL260417C00180000",
+            "short_leg_qty": 1,
+            "limit_price": 25.00,
+            "time_in_force": "day"
+        }
+
+        order_data = {
+            "agent_id": "pmccbot",
+            "client_order_id": f"pmccbot_{fixed_timestamp}_pmcc",
+            "order_type": "pmcc",
+            "mode": "paper",
+            "payload": invalid_payload
+        }
+
+        filename_parts = {
+            'mode': 'paper',
+            'agent_id': 'pmccbot',
+            'order_type': 'pmcc',
+            'timestamp': fixed_timestamp
+        }
+
+        with pytest.raises(ValidationError, match="Invalid payload for pmcc"):
+            validate_json_order(order_data, filename_parts)
+
+    def test_pmcc_missing_limit_price_fails(self, fixed_timestamp):
+        """Test PMCC without limit price fails."""
+        invalid_payload = {
+            "underlying_symbol": "AAPL",
+            "long_leg_symbol": "AAPL270116C00120000",
+            "long_leg_qty": 1,
+            "short_leg_symbol": "AAPL260417C00180000",
+            "short_leg_qty": 1,
+            "time_in_force": "day"
+        }
+
+        order_data = {
+            "agent_id": "pmccbot",
+            "client_order_id": f"pmccbot_{fixed_timestamp}_pmcc",
+            "order_type": "pmcc",
+            "mode": "paper",
+            "payload": invalid_payload
+        }
+
+        filename_parts = {
+            'mode': 'paper',
+            'agent_id': 'pmccbot',
+            'order_type': 'pmcc',
+            'timestamp': fixed_timestamp
+        }
+
+        with pytest.raises(ValidationError, match="Invalid payload for pmcc"):
+            validate_json_order(order_data, filename_parts)
+
+    def test_pmcc_invalid_qty_fails(self, fixed_timestamp):
+        """Test PMCC with zero quantity fails."""
+        invalid_payload = {
+            "underlying_symbol": "AAPL",
+            "long_leg_symbol": "AAPL270116C00120000",
+            "long_leg_qty": 0,
+            "short_leg_symbol": "AAPL260417C00180000",
+            "short_leg_qty": 1,
+            "limit_price": 25.00,
+            "time_in_force": "day"
+        }
+
+        order_data = {
+            "agent_id": "pmccbot",
+            "client_order_id": f"pmccbot_{fixed_timestamp}_pmcc",
+            "order_type": "pmcc",
+            "mode": "paper",
+            "payload": invalid_payload
+        }
+
+        filename_parts = {
+            'mode': 'paper',
+            'agent_id': 'pmccbot',
+            'order_type': 'pmcc',
+            'timestamp': fixed_timestamp
+        }
+
+        with pytest.raises(ValidationError, match="Invalid payload for pmcc"):
+            validate_json_order(order_data, filename_parts)
+
     def test_positions_query_valid(self, valid_positions_payload, fixed_timestamp):
         """Test valid positions query."""
         order_data = {

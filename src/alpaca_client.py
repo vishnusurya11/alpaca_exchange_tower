@@ -90,6 +90,8 @@ class AlpacaClient:
                 return self._option_single(payload, client_order_id)
             elif order_type == "optionmulti":
                 return self._option_multi(payload, client_order_id)
+            elif order_type == "pmcc":
+                return self._poor_mans_covered_call(payload, client_order_id)
             elif order_type == "cryptobuy":
                 return self._crypto_order(payload, "buy", client_order_id)
             elif order_type == "cryptosell":
@@ -229,6 +231,46 @@ class AlpacaClient:
 
         if response.status_code not in [200, 201]:
             raise AlpacaClientError(f"Multi-leg order failed: {response.text}")
+
+        return response.json()
+
+    def _poor_mans_covered_call(self, payload: Dict[str, Any], client_order_id: str) -> Dict[str, Any]:
+        """Submit a poor man's covered call (diagonal call spread) as a multi-leg order."""
+        import requests
+
+        legs = [
+            {
+                "symbol": payload['long_leg_symbol'],
+                "side": "buy",
+                "ratio_qty": payload['long_leg_qty']
+            },
+            {
+                "symbol": payload['short_leg_symbol'],
+                "side": "sell",
+                "ratio_qty": payload['short_leg_qty']
+            }
+        ]
+
+        order_payload = {
+            "order_class": "mleg",
+            "type": "limit",
+            "limit_price": str(payload['limit_price']),
+            "time_in_force": payload['time_in_force'],
+            "legs": legs,
+            "client_order_id": client_order_id
+        }
+
+        response = requests.post(
+            f"{self.base_url}/v2/orders",
+            json=order_payload,
+            headers={
+                "APCA-API-KEY-ID": self.api_key,
+                "APCA-API-SECRET-KEY": self.secret_key
+            }
+        )
+
+        if response.status_code not in [200, 201]:
+            raise AlpacaClientError(f"Poor man's covered call order failed: {response.text}")
 
         return response.json()
 

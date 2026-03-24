@@ -196,6 +196,65 @@ class TestOptionOrders:
 
             mock_trading_client.submit_order.assert_called_once()
 
+    def test_pmcc_order(self, mock_env_vars, valid_pmcc_payload):
+        """Test submitting poor man's covered call order."""
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "id": "pmcc_order_123",
+            "order_class": "mleg",
+            "status": "accepted",
+            "legs": [
+                {"symbol": "AAPL270116C00120000", "side": "buy", "ratio_qty": 1},
+                {"symbol": "AAPL260417C00180000", "side": "sell", "ratio_qty": 1}
+            ]
+        }
+
+        with patch('src.alpaca_client.TradingClient'), \
+             patch('src.alpaca_client.StockHistoricalDataClient'), \
+             patch('src.alpaca_client.CryptoHistoricalDataClient'), \
+             patch('requests.post', return_value=mock_response) as mock_post:
+
+            client = AlpacaClient(mode="paper")
+            result = client.process_order(
+                order_type="pmcc",
+                payload=valid_pmcc_payload,
+                client_order_id="pmccbot_20260214120000000000_pmcc"
+            )
+
+            assert result['order_class'] == 'mleg'
+            assert result['status'] == 'accepted'
+
+            # Verify the API was called with correct leg structure
+            call_args = mock_post.call_args
+            posted_payload = call_args[1]['json']
+            assert posted_payload['order_class'] == 'mleg'
+            assert len(posted_payload['legs']) == 2
+            assert posted_payload['legs'][0]['side'] == 'buy'
+            assert posted_payload['legs'][0]['symbol'] == 'AAPL270116C00120000'
+            assert posted_payload['legs'][1]['side'] == 'sell'
+            assert posted_payload['legs'][1]['symbol'] == 'AAPL260417C00180000'
+
+    def test_pmcc_order_api_failure(self, mock_env_vars, valid_pmcc_payload):
+        """Test PMCC order handles API failure."""
+        mock_response = MagicMock()
+        mock_response.status_code = 422
+        mock_response.text = "Invalid option symbols"
+
+        with patch('src.alpaca_client.TradingClient'), \
+             patch('src.alpaca_client.StockHistoricalDataClient'), \
+             patch('src.alpaca_client.CryptoHistoricalDataClient'), \
+             patch('requests.post', return_value=mock_response):
+
+            client = AlpacaClient(mode="paper")
+
+            with pytest.raises(AlpacaClientError, match="Poor man's covered call order failed"):
+                client.process_order(
+                    order_type="pmcc",
+                    payload=valid_pmcc_payload,
+                    client_order_id="pmccbot_20260214120000000000_pmcc"
+                )
+
     def test_option_multi_leg(self, mock_env_vars, valid_option_multi_payload):
         """Test submitting multi-leg option order."""
         mock_response = MagicMock()
