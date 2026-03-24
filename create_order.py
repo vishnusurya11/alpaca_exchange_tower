@@ -68,6 +68,19 @@ def create_option_single(args) -> dict:
     }
 
 
+def create_pmcc_order(args) -> dict:
+    """Create poor man's covered call order."""
+    return {
+        "underlying_symbol": args.symbol.upper(),
+        "long_leg_symbol": args.long_leg_symbol,
+        "long_leg_qty": int(args.qty),
+        "short_leg_symbol": args.short_leg_symbol,
+        "short_leg_qty": int(args.short_leg_qty or args.qty),
+        "limit_price": args.limit_price,
+        "time_in_force": args.tif or "day"
+    }
+
+
 def create_positions_order(args) -> dict:
     """Create positions query."""
     payload = {}
@@ -95,7 +108,7 @@ def main():
     parser.add_argument("--mode", required=True, choices=["paper", "live"], help="Trading mode")
     parser.add_argument("--type", required=True, dest="order_type",
                         choices=["stockbuy", "stocksell", "cryptobuy", "cryptosell",
-                                 "optionsingle", "positions", "openorders", "accountinfo"],
+                                 "optionsingle", "pmcc", "positions", "openorders", "accountinfo"],
                         help="Order type")
 
     # Common arguments
@@ -108,6 +121,11 @@ def main():
 
     # Option-specific
     parser.add_argument("--side", choices=["buy", "sell"], help="Buy or sell (for options)")
+
+    # PMCC-specific
+    parser.add_argument("--long-leg-symbol", help="OCC symbol for long LEAPS call (PMCC)")
+    parser.add_argument("--short-leg-symbol", help="OCC symbol for short call (PMCC)")
+    parser.add_argument("--short-leg-qty", type=int, help="Short leg quantity (defaults to --qty)")
 
     # Query-specific
     parser.add_argument("--asset-class", choices=["us_equity", "us_option", "crypto"], help="Asset class filter")
@@ -138,6 +156,11 @@ def main():
             print("Error: --symbol, --qty, and --side are required for option orders")
             return 1
         payload = create_option_single(args)
+    elif args.order_type == "pmcc":
+        if not args.symbol or args.qty is None or not args.long_leg_symbol or not args.short_leg_symbol or args.limit_price is None:
+            print("Error: --symbol, --qty, --long-leg-symbol, --short-leg-symbol, and --limit-price are required for PMCC orders")
+            return 1
+        payload = create_pmcc_order(args)
     elif args.order_type == "positions":
         payload = create_positions_order(args)
     elif args.order_type == "openorders":

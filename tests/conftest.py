@@ -160,6 +160,20 @@ def valid_option_multi_payload():
 
 
 @pytest.fixture
+def valid_pmcc_payload():
+    """Sample valid poor man's covered call payload."""
+    return {
+        "underlying_symbol": "AAPL",
+        "long_leg_symbol": "AAPL270116C00120000",
+        "long_leg_qty": 1,
+        "short_leg_symbol": "AAPL260417C00180000",
+        "short_leg_qty": 1,
+        "limit_price": 25.00,
+        "time_in_force": "day"
+    }
+
+
+@pytest.fixture
 def valid_positions_payload():
     """Sample valid positions query payload."""
     return {
@@ -321,6 +335,7 @@ def valid_filenames():
         "live_sentiment_stocksell_20260214120100000000.json",
         "paper_crypto1_cryptobuy_20260214120200000000.json",
         "live_option99_optionsingle_20260214120300000000.json",
+        "paper_pmccbot_pmcc_20260214120350000000.json",
         "paper_riskbot_positions_20260214120400000000.json",
         "live_monitor_openorders_20260214120500000000.json",
     ]

@@ -114,7 +114,28 @@ def create_sample_files():
         }
     })
 
-    # 6. Open Orders Query
+    # 6. Poor Man's Covered Call
+    timestamp = generate_timestamp()
+    samples.append({
+        "filename": f"paper_pmccbot_pmcc_{timestamp}.json",
+        "order": {
+            "agent_id": "pmccbot",
+            "client_order_id": f"pmccbot_{timestamp}_pmcc",
+            "order_type": "pmcc",
+            "mode": "paper",
+            "payload": {
+                "underlying_symbol": "AAPL",
+                "long_leg_symbol": "AAPL270116C00120000",
+                "long_leg_qty": 1,
+                "short_leg_symbol": "AAPL260417C00180000",
+                "short_leg_qty": 1,
+                "limit_price": 25.00,
+                "time_in_force": "day"
+            }
+        }
+    })
+
+    # 7. Open Orders Query
     timestamp = generate_timestamp()
     samples.append({
         "filename": f"paper_monitor_openorders_{timestamp}.json",
